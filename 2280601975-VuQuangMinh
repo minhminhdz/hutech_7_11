@@ -1,0 +1,187 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Student
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int Age { get; set; }
+}
+
+class Program
+{
+    static void Main(string[] args)
+    {
+        // Tạo danh sách học sinh
+        List<Student> students = new List<Student>();
+
+        while (true)
+        {
+            Console.WriteLine("\n==== MENU ====");
+            Console.WriteLine("1. Thêm học sinh");
+            Console.WriteLine("2. In danh sách học sinh");
+            Console.WriteLine("3. Tìm học sinh có tuổi từ 15 đến 18");
+            Console.WriteLine("4. Tìm học sinh có tên bắt đầu bằng chữ 'A'");
+            Console.WriteLine("5. Tính tổng tuổi của tất cả học sinh");
+            Console.WriteLine("6. Tìm học sinh có tuổi lớn nhất");
+            Console.WriteLine("7. Sắp xếp học sinh theo tuổi tăng dần");
+            Console.WriteLine("0. Thoát");
+            Console.Write("Chọn một tùy chọn: ");
+
+            string choice = Console.ReadLine();
+
+            switch (choice)
+            {
+                case "1":
+                    AddStudent(students);
+                    break;
+                case "2":
+                    PrintAllStudents(students);
+                    break;
+                case "3":
+                    PrintStudentsByAgeRange(students);
+                    break;
+                case "4":
+                    PrintStudentsByNameStartingWithA(students);
+                    break;
+                case "5":
+                    PrintTotalAge(students);
+                    break;
+                case "6":
+                    PrintOldestStudent(students);
+                    break;
+                case "7":
+                    SortStudentsByAge(students);
+                    break;
+                case "0":
+                    Console.WriteLine("Thoát chương trình.");
+                    return;
+                default:
+                    Console.WriteLine("Lựa chọn không hợp lệ. Vui lòng chọn lại.");
+                    break;
+            }
+        }
+    }
+
+    // Hàm thêm học sinh
+    static void AddStudent(List<Student> students)
+    {
+        Console.WriteLine("\nNhập thông tin học sinh:");
+
+        Student student = new Student();
+
+        // Nhập ID và kiểm tra đầu vào là số nguyên
+        bool validId = false;
+        while (!validId)
+        {
+            Console.Write("Nhập ID: ");
+            validId = int.TryParse(Console.ReadLine(), out int id);
+            if (validId)
+                student.Id = id;
+            else
+                Console.WriteLine("ID phải là số nguyên. Vui lòng nhập lại.");
+        }
+
+        // Nhập tên
+        Console.Write("Nhập tên: ");
+        student.Name = Console.ReadLine();
+
+        // Nhập tuổi và kiểm tra đầu vào là số nguyên
+        bool validAge = false;
+        while (!validAge)
+        {
+            Console.Write("Nhập tuổi: ");
+            validAge = int.TryParse(Console.ReadLine(), out int age);
+            if (validAge)
+                student.Age = age;
+            else
+                Console.WriteLine("Tuổi phải là số nguyên. Vui lòng nhập lại.");
+        }
+
+        students.Add(student);
+    }
+
+    // Hàm in danh sách học sinh
+    static void PrintAllStudents(List<Student> students)
+    {
+        if (students.Count == 0)
+        {
+            Console.WriteLine("\nKhông có học sinh nào trong danh sách.");
+            return;
+        }
+
+        Console.WriteLine("\nDanh sách học sinh:");
+        students.ForEach(s => Console.WriteLine($"ID: {s.Id}, Tên: {s.Name}, Tuổi: {s.Age}"));
+    }
+
+    // Hàm tìm học sinh có tuổi từ 15 đến 18
+    static void PrintStudentsByAgeRange(List<Student> students)
+    {
+        var ageBetween15And18 = students.Where(s => s.Age >= 15 && s.Age <= 18).ToList();
+        if (ageBetween15And18.Count == 0)
+        {
+            Console.WriteLine("\nKhông có học sinh nào trong độ tuổi từ 15 đến 18.");
+        }
+        else
+        {
+            Console.WriteLine("\nHọc sinh có tuổi từ 15 đến 18:");
+            ageBetween15And18.ForEach(s => Console.WriteLine($"ID: {s.Id}, Tên: {s.Name}, Tuổi: {s.Age}"));
+        }
+    }
+
+    // Hàm tìm học sinh có tên bắt đầu bằng chữ 'A'
+    static void PrintStudentsByNameStartingWithA(List<Student> students)
+    {
+        var nameStartsWithA = students.Where(s => s.Name.StartsWith("A")).ToList();
+        if (nameStartsWithA.Count == 0)
+        {
+            Console.WriteLine("\nKhông có học sinh nào có tên bắt đầu bằng chữ 'A'.");
+        }
+        else
+        {
+            Console.WriteLine("\nHọc sinh có tên bắt đầu bằng chữ 'A':");
+            nameStartsWithA.ForEach(s => Console.WriteLine($"ID: {s.Id}, Tên: {s.Name}, Tuổi: {s.Age}"));
+        }
+    }
+
+    // Hàm tính tổng tuổi của tất cả học sinh
+    static void PrintTotalAge(List<Student> students)
+    {
+        if (students.Count == 0)
+        {
+            Console.WriteLine("\nKhông có học sinh nào để tính tổng tuổi.");
+            return;
+        }
+
+        var totalAge = students.Sum(s => s.Age);
+        Console.WriteLine($"\nTổng tuổi của tất cả học sinh: {totalAge}");
+    }
+
+    // Hàm tìm học sinh có tuổi lớn nhất
+    static void PrintOldestStudent(List<Student> students)
+    {
+        if (students.Count == 0)
+        {
+            Console.WriteLine("\nKhông có học sinh nào trong danh sách.");
+            return;
+        }
+
+        var oldestStudent = students.OrderByDescending(s => s.Age).FirstOrDefault();
+        Console.WriteLine($"\nHọc sinh có tuổi lớn nhất: ID: {oldestStudent.Id}, Tên: {oldestStudent.Name}, Tuổi: {oldestStudent.Age}");
+    }
+
+    // Hàm sắp xếp danh sách theo tuổi tăng dần
+    static void SortStudentsByAge(List<Student> students)
+    {
+        if (students.Count == 0)
+        {
+            Console.WriteLine("\nKhông có học sinh nào để sắp xếp.");
+            return;
+        }
+
+        var sortedByAge = students.OrderBy(s => s.Age).ToList();
+        Console.WriteLine("\nDanh sách học sinh sau khi sắp xếp theo tuổi:");
+        sortedByAge.ForEach(s => Console.WriteLine($"ID: {s.Id}, Tên: {s.Name}, Tuổi: {s.Age}"));
+    }
+}
