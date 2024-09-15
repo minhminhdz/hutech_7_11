@@ -100,7 +100,7 @@ int main() {
                 break;
             case 4: {
                 int tongTuoi = tinhTongTuoi(hocsinh, size);
-                printf("\nTổng tuổi của tất cả học sinh: %d\n", tongTuoi);
+                printf("\nTong tuoi cua tat ca hoc sinh: %d\n", tongTuoi);
                 break;
             }
             case 5:
