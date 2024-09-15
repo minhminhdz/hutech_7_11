@@ -1,0 +1,121 @@
+#include <stdio.h>
+#include <string.h>
+
+typedef struct {
+    int id;
+    char ten[50];
+    int tuoi;
+} HocSinh;
+
+void inDanhSachHocSinh(HocSinh hocsinh[], int size) {
+    printf("Danh ssch hoc sinh:\n");
+    for (int i = 0; i < size; i++) {
+        printf("Id: %d, Ten: %s, Tuoi: %d\n", hocsinh[i].id, hocsinh[i].ten, hocsinh[i].tuoi);
+    }
+}
+
+void timHocSinhTheoDoTuoi(HocSinh hocsinh[], int size, int tuoiMin, int tuoiMax) {
+    printf("\nHoc sinh co tuoi tu %d đen %d:\n", tuoiMin, tuoiMax);
+    for (int i = 0; i < size; i++) {
+        if (hocsinh[i].tuoi >= tuoiMin && hocsinh[i].tuoi <= tuoiMax) {
+            printf("Id: %d, Ten: %s, Tuoi: %d\n", hocsinh[i].id, hocsinh[i].ten, hocsinh[i].tuoi);
+        }
+    }
+}
+
+void timHocSinhTheoTen(HocSinh hocsinh[], int size) {
+    printf("\nHoc sinh co ten bat dau bang chu 'A':\n");
+    for (int i = 0; i < size; i++) {
+        if (hocsinh[i].ten[0] == 'A') {
+            printf("Id: %d, Ten: %s, Tuoi: %d\n", hocsinh[i].id, hocsinh[i].ten, hocsinh[i].tuoi);
+        }
+    }
+}
+
+int tinhTongTuoi(HocSinh hocsinh[], int size) {
+    int tongTuoi = 0;
+    for (int i = 0; i < size; i++) {
+        tongTuoi += hocsinh[i].tuoi;
+    }
+    return tongTuoi;
+}
+
+void timHocSinhLonNhat(HocSinh hocsinh[], int size) {
+    HocSinh lonNhat = hocsinh[0];
+    for (int i = 1; i < size; i++) {
+        if (hocsinh[i].tuoi > lonNhat.tuoi) {
+            lonNhat = hocsinh[i];
+        }
+    }
+    printf("\nHoc sinh lon tuoi nhat: Id: %d, Ten: %s, Tuoi: %d\n", lonNhat.id, lonNhat.ten, lonNhat.tuoi);
+}
+
+void sapXepHocSinhTheoTuoi(HocSinh hocsinh[], int size) {
+    HocSinh temp;
+    for (int i = 0; i < size - 1; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (hocsinh[i].tuoi > hocsinh[j].tuoi) {
+                temp = hocsinh[i];
+                hocsinh[i] = hocsinh[j];
+                hocsinh[j] = temp;
+            }
+        }
+    }
+    printf("\nDanh sach hoc sinh sau khi sap xep:\n");
+    inDanhSachHocSinh(hocsinh, size);
+}
+
+int main() {
+    HocSinh hocsinh[5] = {
+        {1, "Minh", 17},
+        {2, "Linh", 16},
+        {3, "phuc", 18},
+        {4, "Loi", 15},
+        {5, "dat", 19}
+    };
+    int size = 5;
+    int luaChon;
+    
+    do {
+        printf("\n----- Menu -----\n");
+        printf("1. In danh sach toan bo hoc sinh\n");
+        printf("2. Tim hoc sinh tu 15 den 18 tuoi\n");
+        printf("3. Tim hoc sinh co ten bat dau bang chu 'A'\n");
+        printf("4. Tinh tong tuoi cac hoc sinh\n");
+        printf("5. Tim hoc sinh lon tuoi nhat\n");
+        printf("6. Sap xep theo thu tu tuoi tang dan\n");
+        printf("0. Thoat\n");
+        printf("Chon mot tuy chon: ");
+        scanf("%d", &luaChon);
+
+        switch (luaChon) {
+            case 1:
+                inDanhSachHocSinh(hocsinh, size);
+                break;
+            case 2:
+                timHocSinhTheoDoTuoi(hocsinh, size, 15, 18);
+                break;
+            case 3:
+                timHocSinhTheoTen(hocsinh, size);
+                break;
+            case 4: {
+                int tongTuoi = tinhTongTuoi(hocsinh, size);
+                printf("\nTổng tuổi của tất cả học sinh: %d\n", tongTuoi);
+                break;
+            }
+            case 5:
+                timHocSinhLonNhat(hocsinh, size);
+                break;
+            case 6:
+                sapXepHocSinhTheoTuoi(hocsinh, size);
+                break;
+            case 0:
+                printf("Thoat chuong trinh.\n");
+                break;
+            default:
+                printf("Lua chon khong hop le vui long chon lai.\n");
+        }
+    } while (luaChon != 0);
+
+    return 0;
+}
