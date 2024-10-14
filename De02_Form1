@@ -27,12 +27,25 @@ namespace Kiemtraa
         }
         public void load()
         {
-            var M = minh.Sanphams.ToList();
-            dgvSanPham.DataSource = M;
+            // Dùng join để lấy dữ liệu sản phẩm cùng tên loại sản phẩm
+            var productsWithLoai = (from sp in minh.Sanphams
+                                    join loai in minh.LoaiSps
+                                    on sp.MaLoai equals loai.MaLoai
+                                    select new
+                                    {
+                                        sp.MaSP,
+                                        sp.TenSP,
+                                        sp.Ngaynhap,
+                                        TenLoai = loai.TenLoai // Lấy tên loại sản phẩm thay vì mã loại
+                                    }).ToList();
 
+            // Gán dữ liệu cho DataGridView
+            dgvSanPham.DataSource = productsWithLoai;
+
+            // Đổ dữ liệu vào ComboBox Loại Sản Phẩm
             var loaiSPsList = minh.LoaiSps.ToList();
             cboLoaiSP.DataSource = loaiSPsList;
-            cboLoaiSP.DisplayMember = "TenLoai"; // Tên hiển thị trong ComboBox
+            cboLoaiSP.DisplayMember = "TenLoai"; // Hiển thị tên loại trong ComboBox
             cboLoaiSP.ValueMember = "MaLoai";
 
         }
@@ -103,9 +116,13 @@ namespace Kiemtraa
                 // Gán giá trị cho các trường nhập liệu
                 txtMaSP.Text = selectedRow.Cells["MaSP"].Value.ToString(); // Giả sử tên cột là "MaSP"
                 txtTenSP.Text = selectedRow.Cells["TenSP"].Value.ToString(); // Giả sử tên cột là "TenSP"
-                dtNgaynhap.Value = (DateTime)selectedRow.Cells["NgayNhap"].Value; // Giả sử tên cột là "NgayNhap"\
-                var maLoai = selectedRow.Cells["MaLoai"].Value.ToString(); // Giả sử tên cột là "MaLoai"
-                cboLoaiSP.SelectedValue = maLoai;
+                dtNgaynhap.Value = (DateTime)selectedRow.Cells["Ngaynhap"].Value; // Giả sử tên cột là "Ngaynhap"
+
+                // Lấy tên loại sản phẩm từ DataGridView
+                string tenLoai = selectedRow.Cells["TenLoai"].Value.ToString(); // Lấy giá trị từ cột "TenLoai"
+
+                // Tìm MaLoai tương ứng với TenLoai trong ComboBox và gán giá trị cho ComboBox
+                cboLoaiSP.SelectedIndex = cboLoaiSP.FindStringExact(tenLoai);
             }
         }
 
@@ -179,12 +196,12 @@ namespace Kiemtraa
 
         private void btLuu_Click(object sender, EventArgs e)
         {
-
+            
         }
 
         private void btKLuu_Click(object sender, EventArgs e)
         {
-
+            
         }
     }
 }
