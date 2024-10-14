@@ -1,0 +1,190 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using Kiemtraa.Model;
+
+namespace Kiemtraa
+{
+    public partial class Form1 : Form
+    {
+        QLSanpham1Entities minh = new QLSanpham1Entities();
+        public Form1()
+        {
+            InitializeComponent();
+
+        }
+  
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            load();
+
+        }
+        public void load()
+        {
+            var M = minh.Sanphams.ToList();
+            dgvSanPham.DataSource = M;
+
+            var loaiSPsList = minh.LoaiSps.ToList();
+            cboLoaiSP.DataSource = loaiSPsList;
+            cboLoaiSP.DisplayMember = "TenLoai"; // Tên hiển thị trong ComboBox
+            cboLoaiSP.ValueMember = "MaLoai";
+
+        }
+
+        private void dgvSanPham_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
+        }
+
+        private void btThem_Click(object sender, EventArgs e)
+        {
+            var newProduct = new Sanpham
+            {
+                MaSP = txtMaSP.Text,
+                TenSP = txtTenSP.Text,
+                Ngaynhap = dtNgaynhap.Value,
+                MaLoai = cboLoaiSP.SelectedValue.ToString() // Lấy giá trị từ ComboBox
+            };
+
+            minh.Sanphams.Add(newProduct);
+            minh.SaveChanges();
+            load();
+        }
+
+        private void txtMaSP_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtTenSP_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void dtNgaynhap_ValueChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cboLoaiSP_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btSua_Click(object sender, EventArgs e)
+        {
+            var maSP = txtMaSP.Text;
+            var product = minh.Sanphams.FirstOrDefault(sp => sp.MaSP == maSP);
+
+            if (product != null)
+            {
+                product.TenSP = txtTenSP.Text;
+                product.Ngaynhap = dtNgaynhap.Value;
+                product.MaLoai = cboLoaiSP.SelectedValue.ToString(); // Cập nhật loại sản phẩm
+
+                minh.SaveChanges();
+                load(); // Tải lại danh sách sản phẩm
+            }
+        }
+
+        private void dgvSanPham_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0) // Đảm bảo rằng hàng được nhấp là hàng hợp lệ
+            {
+                // Lấy sản phẩm từ hàng đã chọn
+                var selectedRow = dgvSanPham.Rows[e.RowIndex];
+
+                // Gán giá trị cho các trường nhập liệu
+                txtMaSP.Text = selectedRow.Cells["MaSP"].Value.ToString(); // Giả sử tên cột là "MaSP"
+                txtTenSP.Text = selectedRow.Cells["TenSP"].Value.ToString(); // Giả sử tên cột là "TenSP"
+                dtNgaynhap.Value = (DateTime)selectedRow.Cells["NgayNhap"].Value; // Giả sử tên cột là "NgayNhap"\
+                var maLoai = selectedRow.Cells["MaLoai"].Value.ToString(); // Giả sử tên cột là "MaLoai"
+                cboLoaiSP.SelectedValue = maLoai;
+            }
+        }
+
+        private void btXoa_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Bạn có chắc chắn muốn xóa sản phẩm này?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            // Kiểm tra người dùng đã chọn "Yes"
+            if (result == DialogResult.Yes)
+            {
+                var maSP = txtMaSP.Text;
+                var product = minh.Sanphams.FirstOrDefault(sp => sp.MaSP == maSP);
+
+                if (product != null)
+                {
+                    minh.Sanphams.Remove(product);
+                    minh.SaveChanges();
+                    load(); // Tải lại danh sách sản phẩm
+                    MessageBox.Show("Sản phẩm đã được xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Không tìm thấy sản phẩm để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+
+        }
+
+        private void btThoat_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            // Kiểm tra người dùng đã chọn "Yes"
+            if (result == DialogResult.Yes)
+            {
+                Application.Exit(); // Thoát ứng dụng
+            }
+        }
+
+        private void txtTim_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnTim_Click(object sender, EventArgs e)
+        {
+            string searchText = txtTim.Text.Trim().ToLower(); // Lấy nội dung từ txtTim và chuyển về chữ thường
+
+            // Kiểm tra nếu không có từ khóa tìm kiếm
+            if (string.IsNullOrEmpty(searchText))
+            {
+                // Nếu textbox trống, hiển thị tất cả sản phẩm
+                dgvSanPham.DataSource = minh.Sanphams.ToList(); // Hiển thị tất cả sản phẩm
+                return; // Thoát khỏi phương thức
+            }
+
+            // Tìm kiếm sản phẩm theo tên
+            var filteredProducts = minh.Sanphams
+                                        .Where(sp => sp.TenSP.ToLower().Contains(searchText)) // Lọc sản phẩm theo tên
+                                        .ToList(); // Chuyển đổi thành danh sách
+
+            // Kiểm tra xem có sản phẩm nào phù hợp hay không
+            if (filteredProducts.Count == 0)
+            {
+                MessageBox.Show("Không tìm thấy sản phẩm nào với tên đã nhập!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+
+            // Gán danh sách sản phẩm đã lọc cho DataGridView
+            dgvSanPham.DataSource = filteredProducts;
+        }
+
+        private void btLuu_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btKLuu_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
