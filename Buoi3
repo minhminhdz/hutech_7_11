@@ -1,0 +1,216 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using BAITAP.Model;
+
+namespace BAITAP
+{
+    public partial class Form1 : Form
+    {
+        QLSanPhamEntities minh = new QLSanPhamEntities();
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            load();
+        }
+        public void load()
+        {
+            var sanPhams = minh.SanPhams.ToList();
+            dgvSanPham.DataSource = sanPhams;
+
+            // Đổ dữ liệu vào ComboBox Loại Sản Phẩm
+            var loaiSanPhams = minh.LoaiSPs.ToList();
+            cboLoaiSP.DataSource = loaiSanPhams;
+            cboLoaiSP.DisplayMember = "TenLoai";  // Tên cột hiển thị
+            cboLoaiSP.ValueMember = "MaLoai";
+
+            // Ẩn cột "MaLoai" trong DataGridView
+            if (dgvSanPham.Columns["LoaiSp"] != null)
+            {
+                dgvSanPham.Columns["LoaiSp"].Visible = false; // Ẩn cột loại sản phẩm
+            }
+        }
+
+
+        private void dgvSanPham_CellClick(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex >= 0)
+            {
+                DataGridViewRow row = dgvSanPham.Rows[e.RowIndex];
+
+                txtMaSP.Text = row.Cells["MaSach"].Value?.ToString() ?? string.Empty;
+                txtTenSP.Text = row.Cells["TenSach"].Value?.ToString() ?? string.Empty;
+                txtNamXB.Text = row.Cells["NamXB"].Value?.ToString() ?? string.Empty;
+
+                // Đảm bảo ComboBox đã được đổ dữ liệu trước khi chọn giá trị
+                var loaiSanPhams = minh.LoaiSPs.ToList();
+                cboLoaiSP.DataSource = loaiSanPhams;
+                cboLoaiSP.DisplayMember = "TenLoai";
+                cboLoaiSP.ValueMember = "MaLoai";
+
+                if (row.Cells["MaLoai"].Value != null)
+                {
+                    cboLoaiSP.SelectedValue = row.Cells["MaLoai"].Value;
+                }
+            }
+        }
+
+        private void txtTim_TextChanged(object sender, EventArgs e)
+        {
+            string timKiem = txtTim.Text.ToLower();
+
+            // Kiểm tra và tìm kiếm sản phẩm theo mã sách, tên sách hoặc năm xuất bản
+            var sanPhams = minh.SanPhams
+                .Where(sp => sp.MaSach.ToLower().Contains(timKiem) ||
+                             sp.TenSach.ToLower().Contains(timKiem) ||
+                             sp.NamXB.ToString().Contains(timKiem))
+                .ToList();
+
+            dgvSanPham.DataSource = sanPhams;
+        }
+
+        private void txtMaSP_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtTenSP_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void txtNamXB_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cboLoaiSP_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btThem_Click(object sender, EventArgs e)
+        {
+            // Kiểm tra các trường thông tin
+            if (string.IsNullOrWhiteSpace(txtMaSP.Text) ||
+                string.IsNullOrWhiteSpace(txtTenSP.Text) ||
+                string.IsNullOrWhiteSpace(txtNamXB.Text) ||
+                cboLoaiSP.SelectedItem == null)
+            {
+                MessageBox.Show("Vui lòng nhập đầy đủ thông tin sản phẩm.", "Cảnh báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return; // Ngưng thực hiện nếu thông tin chưa đầy đủ
+            }
+
+            string maSP = txtMaSP.Text;
+
+            // Kiểm tra mã sách phải có 6 ký tự
+            if (maSP.Length != 6)
+            {
+                MessageBox.Show("Mã sách phải có 6 ký tự.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Ngưng thực hiện nếu mã sách không hợp lệ
+            }
+
+            var existingProduct = minh.SanPhams.FirstOrDefault(sp => sp.MaSach == maSP);
+            if (existingProduct != null)
+            {
+                MessageBox.Show("Mã sách đã tồn tại. Vui lòng nhập mã khác.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Ngưng thực hiện nếu mã đã tồn tại
+            }
+
+            if (!int.TryParse(txtNamXB.Text, out int namXB))
+            {
+                MessageBox.Show("Năm xuất bản không hợp lệ.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
+            SanPham newProduct = new SanPham()
+            {
+                MaSach = maSP,
+                TenSach = txtTenSP.Text,
+                NamXB = namXB,
+                MaLoai = (int)cboLoaiSP.SelectedValue
+            };
+
+            minh.SanPhams.Add(newProduct);
+            minh.SaveChanges();
+            MessageBox.Show("Thêm sản phẩm thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            load();
+            ResetInputs();
+        }
+
+        private void btSua_Click(object sender, EventArgs e)
+        {
+            // Lấy mã sản phẩm từ TextBox
+            string maSP = txtMaSP.Text;
+            // Tìm sản phẩm theo mã
+            SanPham sp = minh.SanPhams.FirstOrDefault(s => s.MaSach == maSP);
+
+            // Nếu sản phẩm tồn tại thì tiến hành cập nhật
+            if (sp != null)
+            {
+                sp.TenSach = txtTenSP.Text;
+                sp.NamXB = int.Parse(txtNamXB.Text);
+                sp.MaLoai = (int)cboLoaiSP.SelectedValue;
+
+                // Lưu thay đổi
+                minh.SaveChanges();
+                load();  // Tải lại dữ liệu sau khi cập nhật
+            }
+            else
+            {
+                MessageBox.Show("Không tìm thấy sản phẩm để cập nhật.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            ResetInputs();
+        }
+
+        private void btXoa_Click(object sender, EventArgs e)
+        {
+            string maSP = txtMaSP.Text;
+            SanPham sp = minh.SanPhams.FirstOrDefault(s => s.MaSach == maSP);
+
+            // Kiểm tra sản phẩm có tồn tại không
+            if (sp == null)
+            {
+                MessageBox.Show("Sản phẩm cần xóa không tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return; // Kết thúc phương thức nếu sản phẩm không tồn tại
+            }
+
+            // Hiển thị hộp thoại xác nhận
+            var result = MessageBox.Show("Bạn có chắc chắn muốn xóa sản phẩm này không?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            // Kiểm tra người dùng đã chọn "Yes"
+            if (result == DialogResult.Yes)
+            {
+                minh.SanPhams.Remove(sp);
+                minh.SaveChanges();
+                MessageBox.Show("Sản phẩm đã được xóa thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                load();  // Tải lại dữ liệu
+                ResetInputs();
+            }
+        }
+
+
+
+        private void btThoat_Click(object sender, EventArgs e)
+        {
+            var result = MessageBox.Show("Bạn có chắc chắn muốn thoát khỏi ứng dụng?", "Xác nhận thoát", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+            // Kiểm tra người dùng đã chọn "Yes"
+            if (result == DialogResult.Yes)
+            {
+                Application.Exit(); // Thoát ứng dụng
+            }
+        }
+  
+    }
+}
